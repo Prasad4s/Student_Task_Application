@@ -1,0 +1,59 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block title %}Tasks{% endblock title %}
+
+{% block main_content %}
+<script>
+    function showAlert() {
+        alert("Student should register first");
+        window.location.href = "/register";  // Redirect to the register page
+    }
+    
+    {% if messages %}
+        {% for message in messages %}
+            alert("{{ message }}");
+        {% endfor %}
+    {% endif %}
+</script>
+
+<section class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Add Task</h4>
+                    <form method="POST" class="task-form">
+                        {% csrf_token %}
+                        <div class="form-group" id="name-dropdown">
+                            <label for="id_name">Username:</label>
+                            <select name="username" id="id_name" class="form-control">
+                                <option value="" selected disabled>Select Username</option>
+                                {% for username in usernames %}
+                                <option value="{{ username }}">{{ username }}</option>
+                                {% endfor %}
+                            </select><br>
+                           
+                        </div><input type="hidden" name="zerowaste_user" value="{{ selected_user_id }}">
+                        <br>
+                        
+                        <div class="form-group">
+                            <label for="id_task_name">Task Name:</label>
+                            <input type="text" name="task_name" id="id_task_name" class="form-control" required>
+                        </div><br>
+                        <div class="form-group">
+                            <label for="id_task_start_date">Start Date:</label>
+                            <input type="date" name="task_start_date" id="id_task_start_date" class="form-control" required>
+                        </div><br>
+                        <input type="hidden" name="task_status" value="0%">  <!-- Set default task_status as "0%" -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Save Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock main_content %}

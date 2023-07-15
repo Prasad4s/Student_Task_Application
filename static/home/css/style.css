@@ -1,0 +1,139 @@
+/* styles.css */
+
+/* Style the navigation bar */
+.navbar {
+    background-color: #4b778d !important;
+    padding: 10px;
+  }
+  
+  .navbar-brand {
+    font-weight: bold;
+    color: white !important;
+  }
+  
+  .navbar-nav .nav-item .nav-link {
+    color: white;
+  }
+  
+  .navbar-nav .nav-item .nav-link:hover {
+    color: red;
+  }
+  
+  body{
+    background-color: #4b778d;
+  }
+
+/* login */
+.login-card {
+  background-color: #c0bf9983 !important;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
+
+
+.login-card .card-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.login-card .form-group {
+  margin-bottom: 20px;
+}
+
+.login-card .form-label {
+  font-weight: bold;
+}
+
+.login-card .btn-primary {
+  width: 100%;
+}
+
+.login-card .mt-3 {
+  margin-top: 20px;
+}
+
+.login-card .mt-3 a {
+  color: #aec9e6;
+  text-decoration: none;
+}
+
+.login-card .mt-3 a:hover {
+  text-decoration: underline;
+}
+
+/* Tasks.html */
+
+/* Add these styles to your existing styles.css file */
+
+.task-form label {
+  font-weight: bold;
+  color: #333;
+}
+
+.task-form input[type="text"],
+.task-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.task-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.task-form .btn-primary {
+  width: 100%;
+  background-color: #4b778d;
+  border: none;
+}
+
+.task-form .btn-primary:hover {
+  background-color: #356c8c;
+}
+
+.task-form .btn-primary:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+
+/* register.css */
+
+.register-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
+
+.register-card .card-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.register-card .form-group {
+  margin-bottom: 20px;
+}
+
+.register-card .form-label {
+  font-weight: bold;
+}
+
+.register-card .btn-primary {
+  width: 100%;
+}
+
+
+/* home.css */
+

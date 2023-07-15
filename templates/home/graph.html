@@ -1,0 +1,258 @@
+{% extends 'home/base.html' %}
+
+{% block main_content %}
+<section class="container-lg" style="background-color: #f1f1f1;">
+    <div class="row justify-content-around text-center text-white mt-5">
+        <div class="col-sm-8">
+            <br><br>
+            <h3 style="color: black;">Student Status Graph</h3><br>
+        </div>
+    </div>
+    <br>
+    <div class="col-12 col-md-8">
+        <div class="input-group">
+            <select name="username" id="id_name" class="form-control">
+                <option value="" selected disabled>Select Username</option>
+                {% for username in usernames %}
+                    <option value="{{ username }}" {% if username == selected_username %}selected{% endif %}>{{ username }}</option>
+                {% endfor %}
+            </select>
+            <div class="input-group-append">
+                <button id="generate-button" class="btn btn-primary">Generate</button>
+                <a href="{% url 'graph2'  %}" class="btn btn-primary button-spacing">Bar Graph for all tasks</a>
+            </div>
+        </div>
+    </div>
+    
+    <br>
+    <div class="row justify-content-around mt-1">
+        <div class="col-sm-6">
+            <canvas id="graph-student-chart-line" width="400" height="300"></canvas>
+        </div>
+        <div class="col-sm-6">
+            <canvas id="graph-student-chart-pie" width="400" height="300"></canvas>
+        </div>
+    </div>
+</section>
+
+<style>
+    .chart-labels {
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .button-spacing {
+        margin-left: 100px; 
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var graphStudentChartLine = document.getElementById('graph-student-chart-line');
+        var graphStudentChartPie = document.getElementById('graph-student-chart-pie');
+        var usernameDropdown = document.getElementById('id_name');
+        var clearButton = document.getElementById('clear-button-2');
+        var chartLine = null;
+        var chartPie = null;
+        var generateButton = document.getElementById('generate-button');
+
+        generateButton.addEventListener('click', function() {
+            updateGraph();
+        });
+        
+
+        function updateGraph() {
+            var selectedUsername = usernameDropdown.value;
+
+            if (selectedUsername) {
+                fetch(`/home/get_tasks/${selectedUsername}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        var tasks = data.tasks.sort((a, b) => a.id - b.id); // Sort tasks by ID
+                        var labels = tasks.map(task => task.task_name);
+                        var status = tasks.map(task => parseFloat(task.task_status.replace('%', '')));
+
+                        if (chartLine) {
+                            chartLine.destroy();
+                        }
+
+                        chartLine = new Chart(graphStudentChartLine, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Task Status',
+                                    data: status,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 5
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        title: {
+                                            display: true,
+                                            text: 'Task Name',
+                                            color: 'black',
+                                            font: {
+                                                size: 20,
+                                                weight: 'bold'
+                                            }
+                                        },
+                                        ticks: {
+                                            color: 'black',
+                                            font: {
+                                                size: 14,
+                                                weight: 'bold'
+                                            }
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        min: 0,
+                                        max: 100,
+                                        stepSize: 10,
+                                        display: true,
+                                        title: {
+                                            display: true,
+                                            text: 'Task Status',
+                                            color: 'black',
+                                            font: {
+                                                size: 20,
+                                                weight: 'bold'
+                                            }
+                                        },
+                                        ticks: {
+                                            callback: function(value, index, values) {
+                                                return value + '%';
+                                            },
+                                            color: 'black',
+                                            font: {
+                                                size: 16,
+                                                weight: 'bold'
+                                            }
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            font: {
+                                                weight: 'bold',
+                                                size: 14
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        titleFontWeight: 'bold',
+                                        bodyFontWeight: 'bold',
+                                        callbacks: {
+                                            label: function(context) {
+                                                var label = context.label || '';
+                                                var value = context.raw || '';
+                                                return [
+                                                    'Task Name: ' + label,
+                                                    'Task Status: ' + value + '%'
+                                                ];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        if (chartPie) {
+                            chartPie.destroy();
+                        }
+
+                        chartPie = new Chart(graphStudentChartPie, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Task Status',
+                                    data: status,
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                var label = context.label || '';
+                                                var value = context.raw || '';
+
+                                                return [
+                                                    'Task Name: ' + label,
+                                                    'Task Status: ' + value + '%'
+                                                ];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        clearButton.classList.remove('d-none');
+                    })
+                    .catch(error => {
+                        console.log('Error:', error);
+                    });
+            }
+        }
+
+        function clearGraph() {
+            if (chartLine) {
+                chartLine.destroy();
+                chartLine = null;
+            }
+
+            if (chartPie) {
+                chartPie.destroy();
+                chartPie = null;
+            }
+
+            usernameDropdown.selectedIndex = 0;
+            clearButton.classList.add('d-none');
+        }
+
+        usernameDropdown.addEventListener('change', function() {
+            updateGraph();
+        });
+
+        clearButton.addEventListener('click', function() {
+            clearGraph();
+        });
+
+        // Initial load
+        updateGraph();
+    });
+</script>
+{% endblock %}

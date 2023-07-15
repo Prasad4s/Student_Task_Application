@@ -1,0 +1,232 @@
+{% extends 'home/base.html' %}
+
+{% block main_content %}
+<section class="container" style="background-color: #f1f1f1;">
+    <div class="row justify-content-around text-center text-white mt-5">
+        <div class="col-sm-8">
+            <br><br>
+            <h3 style="color: black;">Graph of all tasks</h3><br>
+        </div>
+    </div><br>
+    <div class="col-12 col-md-8">
+        <div class="input-group">
+            <select name="task_name" id="id_task_name" class="form-control">
+                <option value="" selected disabled>Select Task Name</option>
+                {% for task_name in task_names %}
+                <option value="{{ task_name }}">{{ task_name }}</option>
+                {% endfor %}
+            </select>
+            <div class="input-group-append">
+                <button id="clear-button" class="btn btn-secondary">Clear</button>
+            </div>
+        </div>
+    </div><br>
+    <div class="col-9 col-md-3 mt-2 mt-md-0">
+        <a href="{% url 'graph'  %}" class="btn btn-primary">Back</a>
+    </div>
+    <div class="row justify-content-around mt-1">
+        <div class="col-sm-9">
+            <canvas id="task-status-chart" width="400" height="300"></canvas>
+        </div>
+    </div>
+    <div class="row justify-content-around mt-1">
+        <div class="col-sm-9">
+            <canvas id="selected-task-chart" width="400" height="300" style="display: none;"></canvas>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script>
+    // Retrieve the task data from the Django view
+    const taskData = {{ task_data|safe }};
+
+    // Prepare the data for the chart
+    const taskNames = taskData.map(task => task.task_name);
+    const taskStatuses = taskData.map(task => parseInt(task.task_status, 10));
+    const usernames = taskData.map(task => task.username);
+
+    // Run the code after the HTML elements are loaded
+    window.onload = function() {
+        // Create the chart
+        const ctx = document.getElementById('task-status-chart').getContext('2d');
+
+        Chart.register(ChartDataLabels);
+
+        let chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: taskNames,
+                datasets: [{
+                    label: 'Task Status',
+                    data: taskStatuses,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 10
+                        },
+                        title: {
+                            display: true,
+                            text: 'Task Status (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        display: function(context) {
+                            return context.dataset.data[context.dataIndex] !== 0;
+                        },
+                        formatter: function(value, context) {
+                            return usernames[context.dataIndex];
+                        }
+                    }
+                }
+            }
+        });
+
+        // Handle task name selection change
+        const taskNameSelect = document.getElementById('id_task_name');
+        const clearButton = document.getElementById('clear-button');
+        let selectedChart = null;
+
+        taskNameSelect.addEventListener('change', function() {
+            const selectedTaskName = taskNameSelect.value;
+            const selectedTaskData = taskData.filter(task => task.task_name === selectedTaskName);
+
+            if (selectedChart) {
+                selectedChart.destroy();
+                document.getElementById('selected-task-chart').style.display = 'none';
+            }
+
+            // Show the clear button
+            clearButton.style.display = 'block';
+
+            // Hide the previous chart
+            chart.destroy();
+            document.getElementById('task-status-chart').style.display = 'none';
+
+            // Show the new chart
+            document.getElementById('selected-task-chart').style.display = 'block';
+            const selectedCtx = document.getElementById('selected-task-chart').getContext('2d');
+
+            selectedChart = new Chart(selectedCtx, {
+                type: 'pie',
+                data: {
+                    labels: selectedTaskData.map(task => task.username),
+                    datasets: [{
+                        label: 'Task Status',
+                        data: selectedTaskData.map(task => parseInt(task.task_status, 10)),
+                        backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        
+                    },
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] !== 0;
+                            },
+                            formatter: function(value, context) {
+                                return selectedTaskData[context.dataIndex].username;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Handle clear button click
+        clearButton.addEventListener('click', function() {
+            // Hide the clear button
+            clearButton.style.display = 'none';
+            
+            // Clear the selected task name
+            taskNameSelect.value = "";
+
+            if (selectedChart) {
+                selectedChart.destroy();
+                document.getElementById('selected-task-chart').style.display = 'none';
+            }
+
+            // Show the previous chart
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: taskNames,
+                    datasets: [{
+                        label: 'Task Status',
+                        data: taskStatuses,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 10
+                            },
+                            title: {
+                                display: true,
+                                text: 'Task Status (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] !== 0;
+                            },
+                            formatter: function(value, context) {
+                                return usernames[context.dataIndex];
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Show the previous chart
+            document.getElementById('task-status-chart').style.display = 'block';
+        });
+    };
+</script>
+{% endblock main_content %}

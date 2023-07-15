@@ -1,0 +1,183 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock title %}
+
+{% block main_content %}
+<section class="container">
+    <div class="row justify-content-around text-center text-white mt-5">
+        <div class="col-sm-8">
+            <br><br>
+            <h3>Tasks Of Students</h3>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-5">
+        <div class="col-sm-3">
+          <select id="username-dropdown" class="form-select form-select-sm custom-dropdown">
+            <option value="" selected disabled>Select Username</option>
+            {% for username in usernames %}
+                <option value="{{ username }}">{{ username }}</option>
+            {% endfor %}
+        </select>
+        </div>
+        
+    </div>
+    <div class="row justify-content-around text-center text-white mt-1">
+        <div class="col-sm-12">
+            <br><br>
+            <table class="table table-dark table-hover table-responsive-lg">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Task</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">Status</th>
+                        
+                        <th scope="col">Comment</th>
+                        {% if user.is_authenticated %}
+                            <th scope="col" class="text-start ps-5">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody id="task-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+    function fetchTasksByUsername() {
+        var dropdown = document.getElementById("username-dropdown");
+        var selectedUsername = dropdown.options[dropdown.selectedIndex].value;
+
+        if (selectedUsername) {
+            // Clear the existing table rows
+            var tableBody = document.getElementById("task-table-body");
+            tableBody.innerHTML = "";
+
+            // Send an AJAX request to retrieve tasks for the selected username
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var tasks = JSON.parse(xhr.responseText);
+
+                        // Sort tasks by ID
+                        tasks.sort(function (a, b) {
+                            return a.id - b.id;
+                        });
+
+                        tasks.forEach(task => {
+                            var row = document.createElement("tr");
+                            row.setAttribute("data-task-id", task.id); // Add data-task-id attribute
+                            row.innerHTML = `
+                                <td>${task.id}</td>
+                                <td>${task.task_name}</td>
+                                <td>${task.task_start_date}</td>
+                                <td>
+                                    {% if user.is_authenticated %}
+                                    <select class="form-select form-select-sm" id="status-select-${task.id}">
+                                        <option value="0%" ${task.task_status === '0%' ? 'selected' : ''}>0%</option>
+                                        <option value="25%" ${task.task_status === '25%' ? 'selected' : ''}>25%</option>
+                                        <option value="50%" ${task.task_status === '50%' ? 'selected' : ''}>50%</option>
+                                        <option value="75%" ${task.task_status === '75%' ? 'selected' : ''}>75%</option>
+                                        <option value="100%" ${task.task_status === '100%' ? 'selected' : ''}>100%</option>
+                                    </select>
+                                    {% else %}
+                                    ${task.task_status}
+                                    {% endif %}
+                                </td>
+                                
+                                <td><input type="text" class="form-control form-control-sm" value="${task.comment}"></td>
+                                {% if user.is_authenticated %}
+                                    <td class="text-start ps-5">
+                                        <button class="btn btn-primary btn-sm me-2" onclick="update_monitor_task(${task.id}, '${selectedUsername}')">Update</button>
+                                    </td>
+                                {% endif %}
+                            `;
+
+                            tableBody.appendChild(row);
+                        });
+                    } else {
+                        console.error("Error: " + xhr.status);
+                    }
+                }
+            };
+            xhr.open("GET", "/tasks_by_username/" + encodeURIComponent(selectedUsername), true);
+            xhr.send();
+        } else {
+            // Clear the table if no username is selected
+            var tableBody = document.getElementById("task-table-body");
+            tableBody.innerHTML = "";
+        }
+    }
+
+    // Add the event listener to the username dropdown
+    var usernameDropdown = document.getElementById("username-dropdown");
+    usernameDropdown.addEventListener("change", fetchTasksByUsername);
+
+    function update_monitor_task(taskId, selectedUsername) {
+        var selectElement = document.getElementById("status-select-" + taskId);
+        console.log(selectElement); // Check if the element is retrieved successfully
+        var selectedStatus = selectElement.value;
+        console.log(selectedStatus); // Log the selected status value
+    
+        var commentInput = document.querySelector(`#task-table-body tr[data-task-id="${taskId}"] input[type="text"]`);
+        console.log(commentInput); // Check if the comment input element is retrieved successfully
+        var comment = commentInput.value;
+        console.log(comment); // Log the comment value
+    
+        // Prepare the form data
+        var formData = new FormData();
+        formData.append('status', selectedStatus);
+        formData.append('comment', comment);
+        formData.append('username', selectedUsername);
+    
+        // Send an AJAX request to update the task
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    // Task updated successfully
+                    console.log("Task updated successfully");
+                    console.log(xhr.responseText); // Log the response
+                    fetchTasksByUsername(); // Refresh the task list
+                    alert("Details updated successfully!"); // Show an alert message
+                } else {
+                    console.error("Error: " + xhr.status);
+                }
+            }
+        };
+        xhr.open("POST", "/update_monitor_task/" + taskId + "/", true);
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        xhr.send(formData);
+    }
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            var cookies = document.cookie.split(";");
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === name + "=") {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showAlert1() {
+        alert("Please log in to see graphs.");
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        var usernameDropdown = document.getElementById('username-dropdown');
+        usernameDropdown.addEventListener('change', fetchTasksByUsername);
+    });
+</script>
+
+{% endblock main_content %}
