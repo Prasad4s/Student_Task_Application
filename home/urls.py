@@ -16,7 +16,7 @@ urlpatterns = [
     path('graph/', views.graph, name='graph'),
     path('graph2/', views.graph2, name='graph2'),
     
-    path('get_tasks/<str:username>/', views.get_tasks, name='get_tasks'),
+    path('home/get_tasks/<str:username>/', views.get_tasks, name='get_tasks'),
     path('student_home/', views.student_home, name='student_home'),
     path('update_stud_status/<int:task_id>/', views.update_stud_status, name='update_stud_status'),
     path('monitor_home/', views.monitor_home, name='monitor_home'),

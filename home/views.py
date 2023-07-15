@@ -238,7 +238,7 @@ def graph2(request):
 
     # Pass the task data and task names to the template
     context = {'task_data': task_data, 'task_names': task_names}
-    return render(request, 'home/graph3.html', context)
+    return render(request, 'home/graph2.html', context)
 
 
 
