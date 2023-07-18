@@ -21,6 +21,8 @@
           <span class="welcome-message">- Welcome, {{ user.username }}</span>
           {% endif %}
         </a>
+        <!-- Add role information here -->
+        
         <button
           class="navbar-toggler"
           type="button"
@@ -46,6 +48,9 @@
               <a class="nav-link" href="{% url 'user_login' %}">Login</a>
             </li>
             {% endif %}
+            {% if user.is_authenticated %}
+        <span class="navbar-text ms-auto">Role: {{ user.profile.role }}</span>
+        {% endif %}
           </ul>
         </div>
       </div>
