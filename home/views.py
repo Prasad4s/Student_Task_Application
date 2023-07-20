@@ -153,7 +153,6 @@ def tasks(request):
             task_start_date=task_start_date,
             zerowaste_user=user,
             username=username,
-              # Save the role of the user
             task_status='0%'
         )
 
@@ -161,8 +160,10 @@ def tasks(request):
 
         # Add any additional logic or redirection after saving the task
 
-    usernames = User.objects.values_list('username', flat=True)
-    return render(request, 'home/tasks.html', {'usernames': usernames})
+    # Filter and retrieve usernames with role "student"
+    student_usernames = Profile.objects.filter(role='student').values_list('user__username', flat=True)
+
+    return render(request, 'home/tasks.html', {'usernames': student_usernames})
 def get_student_name():
     # Retrieve the student name from the student_data table, assuming you have a specific student in mind
     # Modify this logic based on how you want to retrieve the student name
