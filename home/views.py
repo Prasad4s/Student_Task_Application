@@ -153,7 +153,8 @@ def tasks(request):
             task_start_date=task_start_date,
             zerowaste_user=user,
             username=username,
-            task_status='0%'
+            task_status='0%',
+            task_completion_date=None
         )
 
         messages.success(request, 'Task Added Successfully')  # Add success message
