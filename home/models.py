@@ -65,7 +65,7 @@ class tasks_zerowaste(models.Model):
     task_name = models.CharField(max_length=100)
     task_status = models.CharField(max_length=20)
     task_start_date = models.DateField()
-    task_completion_date = models.DateField()
+    task_completion_date = models.DateField(default=None, null=True)
     username = models.CharField(max_length=50)
     updated_by = models.CharField(max_length=100, default='')
     comment = models.CharField(max_length=100)
