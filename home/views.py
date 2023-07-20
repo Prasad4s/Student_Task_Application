@@ -288,6 +288,10 @@ def update_monitor_task(request, task_id):
         task.comment = comment
         task.updated_by = f"{request.user.username} - {request.user.profile.role}"
 
+        completion_date = request.POST.get('completion_date')
+        if completion_date:
+            task.task_completion_date = completion_date
+
         # Save the updated task
         task.save()
 

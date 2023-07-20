@@ -32,7 +32,7 @@
                         <th scope="col">Task</th>
                         <th scope="col">Start Date</th>
                         <th scope="col">Status</th>
-                        
+                        <th scope="col">Completion Date</th>                        
                         <th scope="col">Comment</th>
                         {% if user.is_authenticated %}
                             <th scope="col" class="text-start ps-5">Actions</th>
@@ -88,6 +88,13 @@
                                     ${task.task_status}
                                     {% endif %}
                                 </td>
+                                <td>
+                                    {% if user.is_authenticated %}
+                                    <input type="date" id="completion-date-${task.id}" class="form-control form-control-sm" value="${task.task_completion_date || ''}">
+                                    {% else %}
+                                    ${task.task_completion_date}
+                                    {% endif %}
+                                </td>
                                 
                                 <td><input type="text" class="form-control form-control-sm" value="${task.comment}"></td>
                                 {% if user.is_authenticated %}
@@ -122,6 +129,9 @@
         console.log(selectElement); // Check if the element is retrieved successfully
         var selectedStatus = selectElement.value;
         console.log(selectedStatus); // Log the selected status value
+
+        var completionDateInput = document.getElementById("completion-date-" + taskId);
+        var completionDate = completionDateInput ? completionDateInput.value : null;
     
         var commentInput = document.querySelector(`#task-table-body tr[data-task-id="${taskId}"] input[type="text"]`);
         console.log(commentInput); // Check if the comment input element is retrieved successfully
@@ -133,6 +143,7 @@
         formData.append('status', selectedStatus);
         formData.append('comment', comment);
         formData.append('username', selectedUsername);
+        formData.append('completion_date', completionDate);
     
         // Send an AJAX request to update the task
         var xhr = new XMLHttpRequest();
