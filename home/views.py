@@ -136,6 +136,8 @@ def user_logout(request):
 def tasks(request):
     if request.method == 'POST':
         task_name = request.POST.get('task_name')
+        task_alloted_count=request.POST.get('task_alloted_count')
+        task_finished_count=request.POST.get('task_finished_count')
         task_start_date = request.POST.get('task_start_date')
         username = request.POST.get('username')
 
@@ -151,9 +153,12 @@ def tasks(request):
         tasks_zerowaste.objects.create(
             task_name=task_name,
             task_start_date=task_start_date,
+            task_alloted_count=task_alloted_count,
+            task_finished_count=task_finished_count,
+            task_status=((int(task_finished_count))/int((task_alloted_count))*100),
             zerowaste_user=user,
             username=username,
-            task_status='0%',
+            # task_status='0%',
             task_completion_date=None
         )
 

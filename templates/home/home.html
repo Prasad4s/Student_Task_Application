@@ -51,6 +51,8 @@
                         <th scope="col">ID</th>
                         <th scope="col">Task</th>
                         <th scope="col">Start Date</th>
+                        <th scope="col">Total count(questions) in task</th>
+                        <th scope="col">Finsihed count(questions) in task</th>
                         <th scope="col">Status</th>
                         <th scope="col">Completion Date</th>
                         {% if user.is_authenticated %}
@@ -94,6 +96,8 @@
                                 <td>${task.id}</td>
                                 <td>${task.task_name}</td>
                                 <td>${task.task_start_date}</td>
+                                <td>${task.task_alloted_count}</td>
+                                <td>${task.task_finished_count}</td>
                                 <td>
                                     {% if user.is_authenticated %}
                                     <select class="form-select form-select-sm" id="status-select-${task.id}">

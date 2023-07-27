@@ -63,6 +63,8 @@ class Profile(models.Model):
 class tasks_zerowaste(models.Model):
     zerowaste_user = models.ForeignKey(User, on_delete=models.CASCADE)
     task_name = models.CharField(max_length=100)
+    task_alloted_count=models.IntegerField()
+    task_finished_count=models.IntegerField()
     task_status = models.CharField(max_length=20)
     task_start_date = models.DateField()
     task_completion_date = models.DateField(default=None, null=True)
@@ -72,5 +74,6 @@ class tasks_zerowaste(models.Model):
 
     class Meta:
         db_table = 'tasks_zerowaste'
+        managed= True
 
 

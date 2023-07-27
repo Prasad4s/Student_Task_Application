@@ -6,6 +6,8 @@ from django import forms
 class TaskForm(forms.Form):
     name = forms.ChoiceField(choices=[])
     task_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Enter Task'}))
+    task_alloted_count=forms.IntegerField()
+    task_finished_count=forms.IntegerField()
     task_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
     def __init__(self, *args, **kwargs):
