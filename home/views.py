@@ -291,11 +291,15 @@ def monitor_home(request):
 def update_monitor_task(request, task_id):
     if request.method == 'POST':
         new_status = request.POST.get('status')
+        new_a_count = request.POST.get('new_a_count')
+        new_f_count = request.POST.get('new_f_count')
         comment = request.POST.get('comment')
         task = get_object_or_404(tasks_zerowaste, id=task_id)
 
-        # Update the task status, comment, and updated_by
+        # Update the task status, finished count, allotted count, and comment
         task.task_status = new_status
+        task.task_finished_count = new_f_count
+        task.task_alloted_count = new_a_count
         task.comment = comment
         task.updated_by = f"{request.user.username} - {request.user.profile.role}"
 
@@ -309,6 +313,7 @@ def update_monitor_task(request, task_id):
         # Construct the JSON response
         response_data = {
             'status': task.task_status,
+            'task_finished_count': task.task_finished_count,  # Add the finished count to the response
         }
         return JsonResponse(response_data)
 

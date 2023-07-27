@@ -31,6 +31,8 @@
                         <th scope="col">ID</th>
                         <th scope="col">Task</th>
                         <th scope="col">Start Date</th>
+                        <th scope="col">Total count(questions) in task</th>
+                        <th scope="col">Finsihed count(questions) in task</th>
                         <th scope="col">Status</th>
                         <th scope="col">Completion Date</th>                        
                         <th scope="col">Comment</th>
@@ -75,19 +77,9 @@
                                 <td>${task.id}</td>
                                 <td>${task.task_name}</td>
                                 <td>${task.task_start_date}</td>
-                                <td>
-                                    {% if user.is_authenticated %}
-                                    <select class="form-select form-select-sm" id="status-select-${task.id}">
-                                        <option value="0%" ${task.task_status === '0%' ? 'selected' : ''}>0%</option>
-                                        <option value="25%" ${task.task_status === '25%' ? 'selected' : ''}>25%</option>
-                                        <option value="50%" ${task.task_status === '50%' ? 'selected' : ''}>50%</option>
-                                        <option value="75%" ${task.task_status === '75%' ? 'selected' : ''}>75%</option>
-                                        <option value="100%" ${task.task_status === '100%' ? 'selected' : ''}>100%</option>
-                                    </select>
-                                    {% else %}
-                                    ${task.task_status}
-                                    {% endif %}
-                                </td>
+                                <td><input type="text" id="alloted-select-${task.id}" class="form-control form-control-sm" value="${task.task_alloted_count || ''}"></td>
+                                <td><input type="text" id="finished-select-${task.id}" class="form-control form-control-sm" value="${task.task_finished_count || ''}" onchange="updateMonitorStatus(${task.id}, '${selectedUsername}')"></td>
+                                <td><input type="text" id="status-select-${task.id}" class="form-control form-control-sm" value="${task.task_status || ''}" readonly></td>
                                 <td>
                                     {% if user.is_authenticated %}
                                     <input type="date" id="completion-date-${task.id}" class="form-control form-control-sm" value="${task.task_completion_date || ''}">
@@ -95,11 +87,10 @@
                                     ${task.task_completion_date}
                                     {% endif %}
                                 </td>
-                                
-                                <td><input type="text" class="form-control form-control-sm" value="${task.comment}"></td>
+                                <td><input type="text" id="comment-${task.id}" class="form-control form-control-sm" value="${task.comment || ''}"></td>
                                 {% if user.is_authenticated %}
                                     <td class="text-start ps-5">
-                                        <button class="btn btn-primary btn-sm me-2" onclick="update_monitor_task(${task.id}, '${selectedUsername}')">Update</button>
+                                        <button class="btn btn-primary btn-sm me-2" onclick="updateMonitorTask(${task.id}, '${selectedUsername}')">Update</button>
                                     </td>
                                 {% endif %}
                             `;
@@ -124,27 +115,35 @@
     var usernameDropdown = document.getElementById("username-dropdown");
     usernameDropdown.addEventListener("change", fetchTasksByUsername);
 
-    function update_monitor_task(taskId, selectedUsername) {
-        var selectElement = document.getElementById("status-select-" + taskId);
-        console.log(selectElement); // Check if the element is retrieved successfully
-        var selectedStatus = selectElement.value;
-        console.log(selectedStatus); // Log the selected status value
+    
+    // ... (unchanged)
+
+    function updateMonitorTask(taskId, selectedUsername) {
+        var selectElement0 = document.getElementById("alloted-select-" + taskId);
+        var selectElement = document.getElementById("finished-select-" + taskId);
+        var selectElement2 = document.getElementById("status-select-" + taskId);
+        var finishedCount = parseInt(selectElement.value);
+        var allottedCount = parseInt(selectElement0.value);
+
+        // Calculate the percentage of completion
+        var percentageCompletion = (finishedCount / allottedCount) * 100;
+        var selectedStatus = percentageCompletion + "%";
 
         var completionDateInput = document.getElementById("completion-date-" + taskId);
         var completionDate = completionDateInput ? completionDateInput.value : null;
-    
-        var commentInput = document.querySelector(`#task-table-body tr[data-task-id="${taskId}"] input[type="text"]`);
-        console.log(commentInput); // Check if the comment input element is retrieved successfully
-        var comment = commentInput.value;
-        console.log(comment); // Log the comment value
-    
+
+        var commentInput = document.getElementById("comment-" + taskId);
+        var comment = commentInput ? commentInput.value : null;
+
         // Prepare the form data
         var formData = new FormData();
         formData.append('status', selectedStatus);
+        formData.append('new_f_count', finishedCount);
+        formData.append('new_a_count', allottedCount);
+        formData.append('completion_date', completionDate);
         formData.append('comment', comment);
         formData.append('username', selectedUsername);
-        formData.append('completion_date', completionDate);
-    
+
         // Send an AJAX request to update the task
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -155,6 +154,12 @@
                     console.log(xhr.responseText); // Log the response
                     fetchTasksByUsername(); // Refresh the task list
                     alert("Details updated successfully!"); // Show an alert message
+
+                    // Parse the JSON response to get the updated finished count
+                    var response = JSON.parse(xhr.responseText);
+                    var updatedFinishedCount = response.task_finished_count;
+                    // Set the updated finished count back to the text field
+                    selectElement.value = updatedFinishedCount;
                 } else {
                     console.error("Error: " + xhr.status);
                 }
