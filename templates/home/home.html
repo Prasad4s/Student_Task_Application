@@ -96,21 +96,15 @@
                                 <td>${task.id}</td>
                                 <td>${task.task_name}</td>
                                 <td>${task.task_start_date}</td>
-                                <td>${task.task_alloted_count}</td>
-                                <td>${task.task_finished_count}</td>
+                                <td><input type="text" id="alloted-select-${task.id}" class="form-control form-control-sm" value="${task.task_alloted_count || ''}"></td>
                                 <td>
-                                    {% if user.is_authenticated %}
-                                    <select class="form-select form-select-sm" id="status-select-${task.id}">
-                                        <option value="0%" ${task.task_status === '0%' ? 'selected' : ''}>0%</option>
-                                        <option value="25%" ${task.task_status === '25%' ? 'selected' : ''}>25%</option>
-                                        <option value="50%" ${task.task_status === '50%' ? 'selected' : ''}>50%</option>
-                                        <option value="75%" ${task.task_status === '75%' ? 'selected' : ''}>75%</option>
-                                        <option value="100%" ${task.task_status === '100%' ? 'selected' : ''}>100%</option>
-                                    </select>
-                                    {% else %}
-                                    ${task.task_status}
-                                    {% endif %}
-                                </td>
+                                 
+                                    <input type="text" id="finished-select-${task.id}" class="form-control form-control-sm" value="${task.task_finished_count || ''}" onchange="updateStatus(${task.id}, '${selectedUsername}')">
+                                    
+                                    </td>
+                                <td>
+                                    <input type="text" id="status-select-${task.id}" class="form-control form-control-sm" value="${task.task_status || ''}" readonly></td>
+                               
                                 <td>
                                     {% if user.is_authenticated %}
                                     <input type="date" id="completion-date-${task.id}" class="form-control form-control-sm" value="${task.task_completion_date || ''}">
@@ -127,7 +121,9 @@
                             `;
 
                             // Store the selected status in the global object
-                            selectedStatuses[task.id] = task.task_status;
+                            // selectedStatuses[task.id] = task.task_status;
+                                // Store the selected finished task count in the global object
+                            selectedStatuses[task.id] = task.task_finished_count;
 
                             tableBody.appendChild(row);
                         });
@@ -150,16 +146,31 @@
     usernameDropdown.addEventListener("change", fetchTasksByUsername);
 
   function updateStatus(taskId, selectedUsername) {
-    var selectElement = document.getElementById("status-select-" + taskId);
-    var selectedStatus = selectElement.value;
-    var selectedIndex = selectElement.selectedIndex;
+    // alert(taskId)
+    var selectElement0 = document.getElementById("alloted-select-" + taskId);
+    var selectElement = document.getElementById("finished-select-" + taskId);
+    var selectElement2 = document.getElementById("status-select-" + taskId);
+    // alert(selectElement.value)
+    // alert(selectElement0.value)
+    var a = selectElement.value / selectElement0.value
+    var per = a*100
+    var selectedStatus = per
+    // alert(selectedStatus)
+    // var selectedStatus = selectElement.value;
+    // var selectedIndex = selectElement.selectedIndex;
+    // alert(selectedIndex)
   
     var completionDateInput = document.getElementById("completion-date-" + taskId);
     var completionDate = completionDateInput ? completionDateInput.value : null;
-  
+    // var newcompletion_status = document.getElementById("status-select-" + taskId);
+    // var new_a_count = document.getElementById("status-select-" + taskId);
+    // var new_f_count = document.getElementById("status-select-" + taskId);
     // Prepare the form data
     var formData = new FormData();
     formData.append('status', selectedStatus);
+    formData.append('new_f_count', selectElement.value);
+    formData.append('new_a_count', selectElement0.value);
+    // alert(selectedStatus)
     formData.append('completion_date', completionDate);
     formData.append('username', selectedUsername);
   
@@ -173,8 +184,8 @@
           console.log(xhr.responseText); // Log the response
   
           // Re-select the previous dropdown value
-          selectElement.selectedIndex = selectedIndex;
-  
+        //  ----removed selectElement.selectedIndex = selectedIndex;
+            selectElement2.value = selectedStatus
           // Show an alert message
           alert("Detail's updated successfully!");
         } else {
